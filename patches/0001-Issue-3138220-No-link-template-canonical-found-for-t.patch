@@ -1,0 +1,40 @@
+From 068516ce17aee41536d431d5c3508a03c897181f Mon Sep 17 00:00:00 2001
+From: git <git@3638643.no-reply.drupal.org>
+Date: Sat, 25 Jul 2020 13:05:10 +0200
+Subject: [PATCH] Issue #3138220: No link template 'canonical' found for the
+ 'paragraph' entity type
+
+---
+ addtoany.module | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/addtoany.module b/addtoany.module
+index 8200599..6a681d9 100644
+--- a/addtoany.module
++++ b/addtoany.module
+@@ -12,6 +12,7 @@ use Drupal\Core\Url;
+ use Drupal\Component\Utility\UrlHelper;
+ use Drupal\node\Entity\Node;
+ use Drupal\addtoany\Form\AddToAnySettingsForm;
++use Drupal\node\NodeInterface;
+ 
+ /**
+  * Implements hook_theme().
+@@ -192,8 +193,12 @@ function addtoany_page_attachments(&$page) {
+  *   The array with url, title, additional_html that will be send to Twig.
+  */
+ function addtoany_create_entity_data($node, $config = NULL) {
+-  $url = isset($node) ? $node->toUrl('canonical', ['absolute' => TRUE])->toString() : NULL;
+-  $title = isset($node) ? $node->label() : NULL;
++  while ($node instanceof EntityInterface && $node->getEntityTypeId() == 'paragraph') {
++    $node = $node->getParentEntity();
++  }
++
++  $url = $node instanceof NodeInterface ? $node->toUrl('canonical', ['absolute' => TRUE])->toString() : NULL;
++  $title = $node instanceof NodeInterface ? $node->label() : NULL;
+   return addtoany_create_data($url, $title, $config);
+ }
+ 
+-- 
+2.20.1
+
